@@ -207,7 +207,7 @@ public:
     if (daysToHarvest > 0)
     {
       daysToHarvest--;
-      cout << name << " is growing. Days left: " << daysToHarvest << endl;
+      cout << name << " is growing. Days left to harvest: " << daysToHarvest << endl;
     }
     else
     {
@@ -419,7 +419,7 @@ int main()
             cout << "No animals to feed. \n";
             break;
           }
-          cout << "Select animal to feed (0 to " << animalCount - 1 << "): ";
+          cout << "Select animal to feed (0 to " << animalCount - 1 << "): \n";
           for (int i = 0; i < animalCount; i++)
           {
             cout << i << ". " << animals[i]->getName() << " \n";
@@ -446,6 +446,11 @@ int main()
             wheatDaysLeft--;
           if (cornDaysLeft > 0)
             cornDaysLeft--;
+
+          if (wheatDaysLeft == 0)
+            cout << "Wheat is ready to harvest\n";
+          if (cornDaysLeft == 0)
+            cout << "Corn is ready to harvest\n";
 
           break;
         }
@@ -535,7 +540,7 @@ int main()
           {
             if (wheatDaysLeft != -1)
             {
-              cout << "Wheat not ready or planted. Days left: " << wheatDaysLeft << "\n";
+              cout << "Wheat not ready or planted. Days left to harvest: " << wheatDaysLeft << "\n";
             }
             else
             {
@@ -554,7 +559,7 @@ int main()
           {
             if (cornDaysLeft != -1)
             {
-              cout << "Corn not ready or planted. Days left: " << cornDaysLeft << "\n";
+              cout << "Corn not ready or planted. Days left to harvest: " << cornDaysLeft << "\n";
             }
             else
             {
