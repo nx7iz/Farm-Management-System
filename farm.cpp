@@ -19,7 +19,7 @@ public:
   virtual void feed()
   {
     fedToday = true;
-    cout << name << " has been fed today. \n";
+    cout << "\n" << name << " has been fed today. \n";
     if (health < 100 && health > 0)
     {
       health += rand() % 12 + 4;
@@ -280,6 +280,95 @@ class FieldWorker : public Worker
 int Cow::milkCapacity = 0;
 int Chicken::totalEggs = 0;
 
+void removeAnimal(int &animalCount, Animal *animals[])
+{
+  cout << "\nSelect animal to remove from (0 to " << animalCount - 1 << "): \n";
+  for (int i = 0; i < animalCount; i++)
+  {
+    cout << i << ". " << animals[i]->getName() << "\n";
+  }
+
+  cout << "Enter choice: ";
+  int removeIndex;
+  cin >> removeIndex;
+
+  if (removeIndex >= 0 && removeIndex < animalCount)
+  {
+    cout << animals[removeIndex]->getName() << " removed from the farm.\n";
+    delete animals[removeIndex];
+  }
+
+  for (int i = removeIndex; i < animalCount - 1; i++)
+  {
+    animals[i] = animals[i + 1];
+  }
+  animalCount--;
+}
+void stimulateNewDay(int &animalCount, int &wheatDaysLeft, int &cornDaysLeft, Animal *animals[])
+{
+  cout << "\nA new day has begun... \n";
+  for (int i = 0; i < animalCount; i++)
+  {
+    animals[i]->newDay();
+  }
+
+  if (wheatDaysLeft > 0)
+    wheatDaysLeft--;
+  if (cornDaysLeft > 0)
+    cornDaysLeft--;
+
+  if (wheatDaysLeft == 0)
+    cout << "Wheat is ready to harvest\n";
+  if (cornDaysLeft == 0)
+    cout << "Corn is ready to harvest\n";
+}
+Animal *createAnimal(const int &index, const string &name)
+{
+  if (index == 1)
+  {
+    return new Cow(name);
+  }
+  else if (index == 2)
+  {
+    return new Chicken(name);
+  }
+  else
+  {
+    cout << "Invalid animal index.\n";
+    return nullptr;
+  }
+}
+void displayAnimalList(int &animalCount, Animal *animals[])
+{
+  cout << "\nAvailable Animals: "
+       << animalCount << "\n";
+  for (int i = 0; i < animalCount; i++)
+    cout << i << ". " << animals[i]->getName() << "\n";
+}
+int getValidAnimalIndex(int &animalCount)
+{
+  int index;
+
+  cout << "Enter the animal index: ";
+  cin >> index;
+
+  if (index < 0 || index >= animalCount)
+  {
+    cout << "Invalid index.\n";
+    return -1;
+  }
+  return index;
+}
+bool checkAnimalValidity(int &animalCount)
+{
+  if (animalCount == 0)
+  {
+    cout << "No animals added yet.\n";
+    return true;
+  }
+  return false;
+}
+
 int main()
 {
   srand(time(0));
@@ -288,23 +377,18 @@ int main()
   Animal *animals[maxAnimals];
   int animalCount = 0;
 
-  int cowIndices[10];
-  int cowCount = 0;
-  int chickenIndices[10];
-  int chickenCount = 0;
+  Wheat wheat;
+  Corn corn;
 
   int wheatDaysLeft = -1;
   int cornDaysLeft = -1;
   int wheatStock = 0;
   int cornStock = 0;
 
-  Wheat wheat;
-  Corn corn;
-
   int choice;
   do
   {
-    cout << "\n*** Welcome To DFMS *** \n";
+    cout << "\n*** Welcome To Digital Farm Management System *** \n";
     cout << "1. Animal Management System \n";
     cout << "2. Crop Management System \n";
     cout << "3. Worker Management System \n";
@@ -316,22 +400,18 @@ int main()
     switch (choice)
     {
     case 1:
-
-      // // Crop
-
-      // Animal
       do
       {
         cout << "\n*** Animal Management System *** \n";
-        cout << "1. Add Cow \n";
-        cout << "2. Produce Milk \n";
-        cout << "3. Add Chicken \n";
-        cout << "4. Lay Eggs \n";
-        cout << "5. Feed Animal \n";
-        cout << "6. Simulate New Day \n";
-        cout << "7. Check Animal Health \n";
-        cout << "8. Back \n";
-        cout << "Enter your choice: ";
+        cout << "1. Add Animal \n";
+        cout << "2. Produce Product \n";
+        cout << "3. Feed Animal \n";
+        cout << "4. Simulate New Day \n";
+        cout << "5. Check Animal Health \n";
+        cout << "6. View Animals \n";
+        cout << "7. Remove Animal \n";
+        cout << "0. Back \n";
+        cout << "\nEnter your choice: ";
 
         cin >> choice;
 
@@ -339,135 +419,65 @@ int main()
         {
         case 1:
         {
-          if (animalCount > maxAnimals)
-          {
-            cout << "Animal limit reached\n";
-            break;
-          }
-
           string name;
-
-          cout << "Enter cow name: ";
+          int index;
+          cout << "1. Cow \n2. Chicken \nEnter animal index: ";
+          cin >> index;
+          cout << "Enter animal name: ";
           cin >> name;
-
-          animals[animalCount] = new Cow(name);
-          cowIndices[cowCount++] = animalCount;
-          animalCount++;
-
+          Animal *newAnimal = createAnimal(index, name);
+          if (newAnimal != nullptr)
+            animals[animalCount++] = newAnimal;
           cout << name << " added.\n";
-
           break;
         }
 
         case 2:
         {
-          if (cowCount == 0)
-          {
-            cout << "No cow to produce milk.\n";
+          if (checkAnimalValidity(animalCount))
             break;
-          }
-
-          for (int i = 0; i < cowCount; i++)
-          {
-            int index = cowIndices[i];
-            Cow *cowPtr = (Cow *)animals[index];
-            cowPtr->produce();
-          }
+          displayAnimalList(animalCount, animals);
+          int index = getValidAnimalIndex(animalCount);
+          if (index != -1)
+            animals[index]->produce();
           break;
         }
         case 3:
         {
-          if (animalCount > maxAnimals)
-          {
-            cout << "Animal limit reached\n";
+          if (checkAnimalValidity(animalCount))
             break;
-          }
-
-          string name;
-
-          cout << "Enter chicken name: ";
-          cin >> name;
-
-          animals[animalCount] = new Chicken(name);
-          chickenIndices[chickenCount++] = animalCount;
-          animalCount++;
-
-          cout << name << " added.\n";
+          displayAnimalList(animalCount, animals);
+          int index = getValidAnimalIndex(animalCount);
+          if (index != -1)
+            animals[index]->feed();
           break;
         }
-
         case 4:
-        {
-          if (chickenCount == 0)
-          {
-            cout << "\nNo chicken to lay eggs.\n";
-            break;
-          }
-
-          for (int i = 0; i < chickenCount; i++)
-          {
-            int index = chickenIndices[i];
-            Chicken *chickenPtr = (Chicken *)animals[index];
-            chickenPtr->produce();
-          }
+          stimulateNewDay(animalCount, wheatDaysLeft, cornDaysLeft, animals);
           break;
-        }
+
         case 5:
-        {
-          if (animalCount == 0)
-          {
-            cout << "No animals to feed. \n";
+
+          if (checkAnimalValidity(animalCount))
             break;
-          }
-          cout << "Select animal to feed (0 to " << animalCount - 1 << "): \n";
-          for (int i = 0; i < animalCount; i++)
-          {
-            cout << i << ". " << animals[i]->getName() << " \n";
-          }
-
-          int idx;
-          cin >> idx;
-
-          if (idx >= 0 && idx < animalCount)
-            animals[idx]->feed();
-          else
-            cout << "Invalid Index!\n";
-          break;
-        }
-        case 6:
-        {
-          cout << "\nA new day has begun... \n";
-          for (int i = 0; i < animalCount; i++)
-          {
-            animals[i]->newDay();
-          }
-
-          if (wheatDaysLeft > 0)
-            wheatDaysLeft--;
-          if (cornDaysLeft > 0)
-            cornDaysLeft--;
-
-          if (wheatDaysLeft == 0)
-            cout << "Wheat is ready to harvest\n";
-          if (cornDaysLeft == 0)
-            cout << "Corn is ready to harvest\n";
-
-          break;
-        }
-        case 7:
-        {
-          if (animalCount == 0)
-          {
-            cout << "No animals added yet. \n";
-            break;
-          }
           for (int i = 0; i < animalCount; i++)
           {
             animals[i]->checkHealth();
           }
           break;
-        }
-        case 8:
+
+        case 6:
+          displayAnimalList(animalCount, animals);
+          break;
+
+        case 7:
+          if (checkAnimalValidity(animalCount))
+            break;
+
+          removeAnimal(animalCount, animals);
+          break;
+
+        case 0:
           break;
 
         default:
@@ -475,7 +485,7 @@ int main()
           break;
         }
 
-      } while (choice != 8);
+      } while (choice != 0);
 
       break;
 
@@ -495,40 +505,20 @@ int main()
         switch (choice)
         {
         case 1:
-        {
           wheat.grow();
           wheatDaysLeft = wheat.getDaysToHarvest();
           break;
-        }
 
         case 2:
-        {
           corn.grow();
           cornDaysLeft = corn.getDaysToHarvest();
           break;
-        }
 
         case 3:
-        {
-          if (wheatDaysLeft > 0)
-            wheatDaysLeft--;
-          if (cornDaysLeft > 0)
-            cornDaysLeft--;
-
-          cout << "\nA new day has begun... \n";
-          for (int i = 0; i < animalCount; i++)
-          {
-            animals[i]->newDay();
-          }
-          if (wheatDaysLeft == 0)
-            cout << "Wheat is ready to harvest\n";
-          if (cornDaysLeft == 0)
-            cout << "Corn is ready to harvest\n";
+          stimulateNewDay(animalCount, wheatDaysLeft, cornDaysLeft, animals);
           break;
-        }
 
         case 4:
-        {
           if (wheatDaysLeft == 0)
           {
             int yield = wheat.harvestYield();
@@ -567,7 +557,6 @@ int main()
             }
           }
           break;
-        }
 
         case 5:
           break;
