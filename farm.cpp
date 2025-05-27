@@ -1,7 +1,11 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
-
+/*
+  1. Water crops
+  2. Work on worker classs
+  3. Market option (buy / sell stocks)
+*/
 using namespace std;
 
 class Animal
@@ -19,7 +23,8 @@ public:
   virtual void feed()
   {
     fedToday = true;
-    cout << "\n" << name << " has been fed today. \n";
+    cout << "\n"
+         << name << " has been fed today. \n";
     if (health < 100 && health > 0)
     {
       health += rand() % 12 + 4;
@@ -368,7 +373,10 @@ bool checkAnimalValidity(int &animalCount)
   }
   return false;
 }
-
+int randomStocks()
+{
+  return 0;
+}
 int main()
 {
   srand(time(0));
@@ -393,8 +401,9 @@ int main()
     cout << "2. Crop Management System \n";
     cout << "3. Worker Management System \n";
     cout << "4. Check Stock Level \n";
+    cout << "5. Go To Market \n";
     cout << "0. Exit \n";
-    cout << "Enter your choice: ";
+    cout << "\nEnter your choice: ";
     cin >> choice;
 
     switch (choice)
@@ -499,7 +508,7 @@ int main()
         cout << "3. Stimulate New Day\n";
         cout << "4. Harvest Crops\n";
         cout << "5. Back\n";
-        cout << "Enter choice Farmer: ";
+        cout << "\nEnter your choice: ";
         cin >> choice;
 
         switch (choice)
@@ -579,6 +588,20 @@ int main()
       cout << "Corn stock: " << cornStock << endl;
       break;
 
+    case 5:
+    {
+      int random = rand() % 35 + 20;
+      // double unitRandom = 0.5 + rand() % (2.3 - 0.5 + 1);
+      cout << "\nWelcome to THE MARKET... \n"
+           << "Stocks refresh daily\n"
+           << "Available Stocks\n"
+           << "\n1. Corn stock:  " << random << " / per unit $" << unitRandom 
+           << "\n2. Wheat stock: " << random << " / per unit $" << unitRandom
+           << "\n3. Milk stock:  " << random << " / per unit $" << unitRandom
+           << "\n4. Eggs stock:  " << random << " / per unit $" << unitRandom << endl;
+      cout << "Enter stock index to buy: ";
+      break;
+    }
     case 0:
       cout << "Leaving Farm ...\n";
       break;
