@@ -4,7 +4,7 @@
 /*
   1. Water crops
   2. Work on worker classs
-  3. Market choice (buy / sell stocks)
+  3. Market option (buy / sell stocks)
 */
 using namespace std;
 
@@ -131,9 +131,9 @@ public:
   {
     return milkCapacity;
   }
-  static void sellMilk(int value)
+  static void configureMilkCapacity(int value)
   {
-    milkCapacity -= value;
+    milkCapacity += value;
   }
 };
 
@@ -195,9 +195,10 @@ public:
   {
     return totalEggs;
   }
-  static void sellEggs(int value)
+
+  static void configureEggs(int value)
   {
-    totalEggs -= value;
+    totalEggs += value;
   }
 };
 
@@ -275,12 +276,14 @@ class Worker
 public:
   virtual void performTask();
 };
+
 class AnimalCaretaker : public Worker
 {
   void performTask() override
   {
   }
 };
+
 class FieldWorker : public Worker
 {
   void performTask() override
@@ -380,57 +383,10 @@ bool checkAnimalValidity(int &animalCount)
   return false;
 }
 
-bool checkQuantity(int &quantity, int &stock)
-{
-  if (quantity > stock)
-  {
-    cout << "\nError! Cannot process, Stock seems to be low.\n";
-    return true;
-  }
-  return false;
-}
-
-void buyStock(double &balance, int &stock, int &quantity, double &value)
-{
-  if (value > balance)
-  {
-    cout << "Not enough balance to buy.\n";
-  }
-  else if (balance > 0)
-  {
-    stock += quantity;
-    balance -= value;
-    cout << quantity << " units purchased.\n";
-  }
-}
-double getValue(int &quantity, double &stock)
-{
-  return (quantity * stock) / 2;
-}
-int getStock()
-{
-  return rand() % 35 + 20;
-}
-double getUnit()
-{
-  return (rand() % 3 + 1.0) / 2;
-}
-void showAvailableStock(int &milkCapacity, int &totalEggs, int &wheatStock, int &cornStock)
-{
-  cout << "\nCurrently Available Stocks"
-       << "\n1. Milk:  " << milkCapacity << " Liters"
-       << "\n2. Eggs:  " << totalEggs << " Units"
-       << "\n3. Wheat: " << wheatStock << " Units"
-       << "\n4. Corn:  " << cornStock << " Units" << "\n";
-}
-
 int main()
 {
   srand(time(0));
   double balance = 10.00;
-
-  int milkCapacity = Cow::getMilkCapacity();
-  int totalEggs = Chicken::getTotalEggs();
 
   const int maxAnimals = 10;
   Animal *animals[maxAnimals];
@@ -470,7 +426,7 @@ int main()
         cout << "5. Check Animal Health \n";
         cout << "6. View Animals \n";
         cout << "7. Remove Animal \n";
-        cout << "8. Back \n";
+        cout << "0. Back \n";
         cout << "\nEnter your choice: ";
 
         cin >> choice;
@@ -537,7 +493,7 @@ int main()
           removeAnimal(animalCount, animals);
           break;
 
-        case 8:
+        case 0:
           break;
 
         default:
@@ -545,7 +501,8 @@ int main()
           break;
         }
 
-      } while (choice != 8);
+      } while (choice != 0);
+
       break;
 
     case 2:
@@ -629,133 +586,177 @@ int main()
 
     case 4:
 
-      showAvailableStock(milkCapacity, totalEggs, wheatStock, cornStock);
+      cout << "\nStock available\n";
+      cout << "Milk capacity: " << Cow::getMilkCapacity() << endl;
+      cout << "Total eggs: " << Chicken::getTotalEggs() << endl;
+
+      cout << "\nCorn Stock: \n";
+      cout << "Wheat stock: " << wheatStock << endl;
+      cout << "Corn stock: " << cornStock << endl;
       break;
 
     case 5:
     {
       int index, quantity;
-      int choice;
+      int option;
 
       cout << "\nWelcome to THE MARKET... \n"
            << "Current Balance: $" << balance << "\n"
            << "\n1. Buy goods"
            << "\n2. Sell goods"
-           << "\n3. Back"
-           << "\nEnter your choice: ";
-      cin >> choice;
+           << "\nEnter option: ";
+      cin >> option;
 
-      if (choice == 3)
-        break;
+      cout << "\nStocks may vary with conditions\n";
+      cout << "\nAvailable Stocks\n";
 
-      int randomCornStock = getStock(), randomWheatStock = getStock(), randomMilkStock = getStock(), randomEggStock = getStock();
-      double cornRandomUnit = getUnit(), wheatRandomUnit = getUnit(), milkRandomUnit = getUnit(), eggRandomUnit = getUnit();
+      int randomCornStock = rand() % 35 + 20;
+      int randomWheatStock = rand() % 35 + 20;
+      int randomMilkStock = rand() % 35 + 20;
+      int randomEggStock = rand() % 35 + 20;
 
-      if (choice == 1)
+      double cornRandomUnit = (rand() % 3 + 1.0) / 2;
+      double wheatRandomUnit = (rand() % 3 + 1.0) / 2;
+      double milkRandomUnit = (rand() % 3 + 1.0) / 2;
+      double eggRandomUnit = (rand() % 3 + 1.0) / 2;
+
+      cout << "1. Corn stock:  " << randomCornStock << " / per 2 units $" << cornRandomUnit;
+      cout << "\n2. Wheat stock: " << randomWheatStock << " / per 2 units $" << wheatRandomUnit;
+      cout << "\n3. Milk stock:  " << randomMilkStock << " / per 2 units $" << milkRandomUnit;
+      cout << "\n4. Eggs stock:  " << randomEggStock << " / per 2 units $" << eggRandomUnit << endl;
+
+      if (option == 1)
       {
-        if (balance <= 0)
-        {
-          cout << "\nInsufficient balance to make any purchases.\n";
-          break;
-        }
-        cout << "\nStocks may vary with conditions\n";
-        cout << "\nAvailable Stocks\n";
-        cout << "1. Corn stock:  " << randomCornStock << " / per 2 units $" << cornRandomUnit;
-        cout << "\n2. Wheat stock: " << randomWheatStock << " / per 2 units $" << wheatRandomUnit;
-        cout << "\n3. Milk stock:  " << randomMilkStock << " / per 2 liters $" << milkRandomUnit;
-        cout << "\n4. Eggs stock:  " << randomEggStock << " / per 2 units $" << eggRandomUnit << endl;
 
         cout << "\nEnter stock index and quantity to buy: ";
         cin >> index >> quantity;
 
         if (index <= 0 || index > 4 || quantity <= 0)
         {
-          cout << "Invalid choice.\n";
+          cout << "Invalid option.\n";
+          break;
+        }
+        if (quantity > cornRandomUnit || quantity > wheatRandomUnit || quantity > milkRandomUnit || quantity > eggRandomUnit)
+        {
+          cout << "\nCannot buy. Stock seems to be low\n";
           break;
         }
         if (index == 1)
         {
-          if (checkQuantity(quantity, randomCornStock))
-            break;
-          double value = getValue(quantity, cornRandomUnit);
-          buyStock(balance, cornStock, quantity, value);
+          double value = (quantity * cornRandomUnit) / 2;
+          if (value > balance || balance <= 0)
+          {
+            cout << "Not enough balance to buy.\n";
+          }
+          else if (balance > 0)
+          {
+            cornStock += quantity;
+            balance -= value;
+            cout << "Purchased Successfully.\n";
+          }
         }
         else if (index == 2)
         {
-          if (checkQuantity(quantity, randomWheatStock))
-            break;
-          double value = getValue(quantity, wheatRandomUnit);
-          buyStock(balance, wheatStock, quantity, value);
+          double value = (quantity * wheatRandomUnit) / 2;
+          if (value > balance || balance <= 0)
+          {
+            cout << "Not enough balance to buy.\n";
+          }
+          else if (balance > 0)
+          {
+            wheatStock += quantity;
+            balance -= value;
+            cout << "Purchased Successfully.\n";
+          }
         }
         else if (index == 3)
         {
-          if (checkQuantity(quantity, randomMilkStock))
-            break;
-          double value = getValue(quantity, milkRandomUnit);
-          buyStock(balance, milkCapacity, quantity, value);
+          double value = (quantity * milkRandomUnit) / 2;
+          if (value > balance || balance <= 0)
+          {
+            cout << "Not enough balance to buy.\n";
+          }
+          else if (balance > 0)
+          {
+            Cow::configureMilkCapacity(quantity);
+            balance -= value;
+            cout << "Purchased Successfully.\n";
+          }
         }
         else if (index == 4)
         {
-          if (checkQuantity(quantity, randomEggStock))
-            break;
-          double value = getValue(quantity, eggRandomUnit);
-          buyStock(balance, totalEggs, quantity, value);
+          double value = (quantity * eggRandomUnit) / 2;
+          if (value > balance || balance <= 0)
+          {
+            cout << "Not enough balance to buy.\n";
+          }
+          else if (balance > 0)
+          {
+            Chicken::configureEggs(quantity);
+            balance -= value;
+            cout << "Purchased Successfully.\n";
+          }
         }
       }
-      else if (choice == 2)
+      else if (option == 2)
       {
-        showAvailableStock(milkCapacity, totalEggs, wheatStock, cornStock);
         cout << "\nEnter stock index and quantity to sell: ";
         cin >> index >> quantity;
 
         if (index <= 0 || index > 4 || quantity <= 0)
         {
-          cout << "Invalid choice.\n";
+          cout << "Invalid option.\n";
           break;
         }
 
         if (index == 1)
         {
-          if (checkQuantity(quantity, cornStock))
-            break;
-          double value = getValue(quantity, cornRandomUnit);
-          cornStock -= quantity;
-          balance += value;
-          cout << quantity << " units of Corn sold. $" << value << " earned!!\n";
+          double value = (quantity * cornRandomUnit) / 2;
+
+          if (balance > 0)
+          {
+            cornStock += quantity;
+            balance -= value;
+            cout << "Purchased Successfully.\n";
+          }
         }
         else if (index == 2)
         {
-          if (checkQuantity(quantity, wheatStock))
-            break;
-          double value = getValue(quantity, wheatRandomUnit);
-          wheatStock -= quantity;
-          balance += value;
-          cout << quantity << " units of Wheat sold. $" << value << " earned!!\n";
+          double value = (quantity * wheatRandomUnit) / 2;
+
+          if (balance > 0)
+          {
+            wheatStock += quantity;
+            balance -= value;
+            cout << "Purchased Successfully.\n";
+          }
         }
         else if (index == 3)
         {
+          double value = (quantity * milkRandomUnit) / 2;
 
-          if (checkQuantity(quantity, milkCapacity))
-            break;
-          double value = getValue(quantity, milkRandomUnit);
-          Cow::sellMilk(quantity);
-          balance += value;
-          cout << quantity << " liters of Milk sold. $" << value << " earned!!\n";
+          if (balance > 0)
+          {
+            Cow::configureMilkCapacity(quantity);
+            balance -= value;
+            cout << "Purchased Successfully.\n";
+          }
         }
         else if (index == 4)
         {
+          double value = (quantity * eggRandomUnit) / 2;
 
-          if (checkQuantity(quantity, totalEggs))
-            break;
-          double value = getValue(quantity, eggRandomUnit);
-          Chicken::sellEggs(quantity);
-          balance += value;
-          cout << quantity << " units of Eggs sold. $" << value << " earned!!\n";
+          if (balance > 0)
+          {
+            Chicken::configureEggs(quantity);
+            balance -= value;
+            cout << "Purchased Successfully.\n";
+          }
         }
       }
-    }
-    break;
 
+      break;
+    }
     case 0:
       cout << "Leaving Farm ...\n";
       break;
