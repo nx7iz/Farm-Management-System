@@ -280,17 +280,16 @@ class Crop
 protected:
   string name;
   int daysToHarvest;
-  bool isWatered;
 
 public:
-  Crop(string n = "", int days = 0) : name(n), daysToHarvest(days), isWatered(false) {}
+  Crop(string n = "", int days = 0) : name(n), daysToHarvest(days) {}
 
   virtual void grow()
   {
     cout << "Seed of " << name << " has been planted. Will grow soon.\n";
   }
 
-  virtual void newDay()
+  virtual void nextDay()
   {
     if (daysToHarvest > 0)
     {
@@ -301,11 +300,9 @@ public:
     {
       cout << name << " is ready to harvest. \n";
     }
-    isWatered = false;
   }
   virtual void water()
   {
-    isWatered = true;
   }
 
   virtual int harvestYield()
@@ -318,45 +315,20 @@ public:
     cout << name << ": " << (daysToHarvest > 0 ? "Growing" : "Ready to harvest") << "(" << daysToHarvest << " days remaining)\n";
   }
   int getDaysToHarvest() { return daysToHarvest; }
-  bool getIsWatered() { return isWatered; }
 };
 
 class Wheat : public Crop
 {
-  int wheatDaysLeft;
-
 public:
-  Wheat() : Crop("Wheat", 3), wheatDaysLeft(-1) {}
+  Wheat() : Crop("Wheat", 3) {}
 
   void grow() override
   {
     cout << "Planted wheat seeds.\n";
   }
-  void newDay() override
-  {
-    Crop::newDay();
-  }
-
   int harvestYield() override
   {
-    if (isWatered)
-      return rand() % 26 + 10;
-    else
-      cout << "Wheat not watered. Please water.\n";
-    return 0;
-  }
-  void checkStatus() override
-  {
-    cout << name << ": " << (wheatDaysLeft > 0 ? "Growing" : "Ready to harvest") << "(" << wheatDaysLeft << " days remaining)\n";
-  }
-
-  void water() override
-  {
-    isWatered = true;
-    cout << "Watering wheat...\n";
-  }
-  int getDaysLeft() {
-    return wheatDaysLeft;
+    return rand() % 18 + 8;
   }
 };
 
@@ -369,23 +341,9 @@ public:
   {
     cout << "Corn planted.\n";
   }
-  void newDay() override
-  {
-    Crop::newDay();
-  }
   int harvestYield() override
   {
-    if (isWatered)
-      return rand() % 26 + 10;
-    else
-      cout << "Corn not watered. Please water.\n";
-    return 0;
-  }
-
-  void water() override
-  {
-    isWatered = true;
-    cout << "Watering Crop...\n";
+    return rand() % 26 + 10;
   }
 };
 
@@ -407,43 +365,24 @@ class FieldWorker : public Worker
   {
   }
 };
-void getDays(int &wheatDaysLeft, int &cornDaysLeft, Wheat wheat, Corn corn)
-{
-  if (wheat.getDaysLeft() <= 2 && wheat.getIsWatered())
-  {
-    cout << "Wheat needs to be watered\n";
-  }
-  else
-  {
-    if (wheatDaysLeft > 0)
-      wheatDaysLeft--;
-  }
 
-  if (cornDaysLeft <= 2 && corn.getIsWatered())
-  {
-    cout << "Corn needs to be watered\n";
-  }
-  else
-  {
-    if (cornDaysLeft > 0)
-      cornDaysLeft--;
-  }
-  if (wheatDaysLeft == 0)
-    cout << "Wheat is ready to harvest\n";
-  if (cornDaysLeft == 0)
-    cout << "Corn is ready to harvest\n";
-}
-
-void stimulateNewDay(int &animalCount, int &wheatDaysLeft, int &cornDaysLeft, Animal *animals[], Wheat wheat, Corn corn)
+void stimulateNewDay(int &animalCount, int &wheatDaysLeft, int &cornDaysLeft, Animal *animals[])
 {
   cout << "\nA new day has begun... \n";
   for (int i = 0; i < animalCount; i++)
   {
     animals[i]->newDay();
   }
-  wheat.newDay();
-  corn.newDay();
-  getDays(wheatDaysLeft, cornDaysLeft, wheat, corn);
+
+  if (wheatDaysLeft > 0)
+    wheatDaysLeft--;
+  if (cornDaysLeft > 0)
+    cornDaysLeft--;
+
+  if (wheatDaysLeft == 0)
+    cout << "Wheat is ready to harvest\n";
+  if (cornDaysLeft == 0)
+    cout << "Corn is ready to harvest\n";
 }
 
 bool checkQuantity(int &quantity, const int &stock)
@@ -533,7 +472,6 @@ int main()
   Animal *animals[maxAnimals];
   int animalCount = 0;
 
-  Crop crop;
   Wheat wheat;
   Corn corn;
 
@@ -714,15 +652,6 @@ int main()
           cin >> choice;
           if (choice == 1)
           {
-            if (wheatDaysLeft != -1)
-              wheat.water();
-            else
-
-              cout << "Wheat not planted yet.\n";
-            if (cornDaysLeft != -1)
-              corn.water();
-            else
-              cout << "Corn not planted yet.\n";
           }
           else if (choice == 2)
           {
@@ -731,15 +660,8 @@ int main()
           }
           else if (choice == 3)
           {
-            if (wheatDaysLeft != -1)
-              wheat.checkStatus();
-            else
-              cout << "Wheat not planted yet.\n";
-
-            if (cornDaysLeft != -1)
-              corn.checkStatus();
-            else
-              cout << "Corn not planted yet.\n";
+            wheat.checkStatus();
+            corn.checkStatus();
           }
           else
             cout << "Invalid choice.\n";
@@ -754,7 +676,7 @@ int main()
       break;
 
     case 4:
-      stimulateNewDay(animalCount, wheatDaysLeft, cornDaysLeft, animals, wheat, corn);
+      stimulateNewDay(animalCount, wheatDaysLeft, cornDaysLeft, animals);
       break;
 
     case 5:
