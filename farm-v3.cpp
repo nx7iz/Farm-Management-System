@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
- 
+
 using namespace std;
 
 class Animal {
@@ -15,7 +15,26 @@ public:
 
   Animal(string n) : name(n), health(100), fedToday(false) {}
 
-  virtual void feed() {
+  virtual void feed() = 0;
+  virtual void newDay() = 0;
+  virtual void checkHealth() = 0;
+  virtual void produce() = 0;
+
+  string getName() { return name; }
+
+  virtual ~Animal() {};
+};
+
+class Cow : public Animal {
+  bool milkProduced;
+  static int milkCapacity;
+
+public:
+  Cow() {}
+
+  Cow(string n) : Animal(n), milkProduced(false) {}
+
+  void feed() override {
     fedToday = true;
     cout << "\n" << name << " has been fed today. \n";
     if (health < 100 && health > 0) {
@@ -25,10 +44,11 @@ public:
     if (health > 100) {
       health = 100;
     }
+    cout << "Fed cow " << name << " with hay. \n";
   }
 
-  virtual void newDay() {
-    if (health != 0) {
+  void newDay() override {
+        if (health != 0) {
       if (!fedToday) {
         int drop = rand() % 9 + 7;
         health -= drop;
@@ -49,34 +69,6 @@ public:
     if (health < 0) {
       health = 0;
     }
-  }
-
-  virtual void checkHealth() {
-    cout << "\n" << name << " has health: " << health << " /100\n";
-  }
-
-  virtual void produce() {
-  }
-
-  string getName() { return name; }
-};
-
-class Cow : public Animal {
-  bool milkProduced;
-  static int milkCapacity;
-
-public:
-  Cow() {}
-
-  Cow(string n) : Animal(n), milkProduced(false) {}
-
-  void feed() override {
-    Animal::feed();
-    cout << "Fed cow " << name << " with hay. \n";
-  }
-
-  void newDay() override {
-    Animal::newDay();
     milkProduced = false;
   }
 
@@ -95,7 +87,7 @@ public:
   }
 
   void checkHealth() override {
-    Animal::checkHealth();
+    cout << "\n" << name << " has health: " << health << " /100\n";
     if (health < 50) {
       cout << name << " health is unstable. Please feed. \n";
     }
@@ -116,12 +108,39 @@ public:
   Chicken(string n) : Animal(n), eggsLaid(false) {}
 
   void feed() override {
-    Animal::feed();
+    fedToday = true;
+    cout << "\n" << name << " has been fed today. \n";
+    if (health < 100 && health > 0) {
+      health += rand() % 12 + 4;
+    }
+
+    if (health > 100) {
+      health = 100;
+    }
     cout << "Chicken " << name << " has been fed with grains. \n";
   }
 
   void newDay() override {
-    Animal::newDay();
+        if (health != 0) {
+      if (!fedToday) {
+        int drop = rand() % 9 + 7;
+        health -= drop;
+        cout << "\n" << name << " was not fed today. Health decreased by " << drop << ".\n";
+      } else {
+        cout << name << " was well-fed today. Health remains stable. \n";
+      }
+    }
+
+    fedToday = false;
+
+    if (health == 0) {
+      cout << name << " died. Cause of death: Starvation.\n";
+    } else if (health < 50) {
+      cout << name << " Health is unstable. Please feed. \n";
+    }
+
+    if (health < 0)
+      health = 0;
     eggsLaid = false;
   }
 
@@ -140,7 +159,7 @@ public:
   }
 
   void checkHealth() {
-    Animal::checkHealth();
+    cout << "\n" << name << " has health: " << health << " /100\n";
     if (health < 50) {
       cout << "\n" << name << " health is unstable. Please feed\n";
     }
@@ -221,38 +240,12 @@ protected:
 public:
   Crop(string n = "") : name(n), isWatered(false), daysToHarvest(-1) {}
 
-  virtual void grow() {
-    cout << "Seed of " << name << " has been planted. Will grow soon.\n";
-  }
+  virtual void grow() = 0;
+  virtual void water() = 0;
 
-  virtual void water() {
-    isWatered = true;
-    cout << "Watering " << name << "...\n";
-  }
+  virtual void newDay() = 0;
 
-  virtual void newDay() {
-    if (daysToHarvest != 0) {
-      if (daysToHarvest != -1) {
-        if (daysToHarvest <= 2 && !isWatered) {
-          cout << name << " needs to be watered\n";
-        } else if (daysToHarvest > 0) {
-          daysToHarvest--;
-          if (daysToHarvest > 0) {
-            cout << name << " is growing. Days left to harvest: " << daysToHarvest << endl;
-          }
-        }
-      }
-    }
-    
-    if (daysToHarvest == 0) {
-      cout << name << " is ready to harvest\n";
-    }
-    isWatered = false;
-  }
-
-  virtual int harvestYield() {
-    return rand() % 11 + 10;
-  }
+  virtual int harvestYield() = 0;
 
   int getDaysToHarvest() { return daysToHarvest; }
   void setDaysToHarvest(int days) { daysToHarvest = days; }
@@ -267,6 +260,8 @@ public:
   }
 
   bool getIsWatered() { return isWatered; }
+  
+  virtual ~Crop() {};
 };
 
 class Wheat : public Crop {
@@ -289,10 +284,31 @@ public:
 
   void water() override {
     if (daysToHarvest != -1) {
-      Crop::water();
+      isWatered = true;
+      cout << "Watering " << name << "...\n";
     } else {
       cout << name << " not planted yet.\n";
     }
+  }
+
+  virtual void newDay() {
+    if (daysToHarvest != 0) {
+      if (daysToHarvest != -1) {
+        if (daysToHarvest <= 2 && !isWatered) {
+          cout << name << " needs to be watered\n";
+        } else if (daysToHarvest > 0) {
+          daysToHarvest--;
+          if (daysToHarvest > 0) {
+            cout << name << " is growing. Days left to harvest: " << daysToHarvest << endl;
+          }
+        }
+      }
+    }
+    
+    if (daysToHarvest == 0) {
+      cout << name << " is ready to harvest\n";
+    }
+    isWatered = false;
   }
 };
 
@@ -316,70 +332,57 @@ public:
 
   void water() override {
     if (daysToHarvest != -1) {
-      Crop::water();
+      isWatered = true;
+      cout << "Watering " << name << "...\n";
     } else {
       cout << name << " not planted yet.\n";
     }
+  }
+  virtual void newDay() {
+    if (daysToHarvest != 0) {
+      if (daysToHarvest != -1) {
+        if (daysToHarvest <= 2 && !isWatered) {
+          cout << name << " needs to be watered\n";
+        } else if (daysToHarvest > 0) {
+          daysToHarvest--;
+          if (daysToHarvest > 0) {
+            cout << name << " is growing. Days left to harvest: " << daysToHarvest << endl;
+          }
+        }
+      }
+    }
+    
+  if (daysToHarvest == 0) {
+    cout << name << " is ready to harvest\n";
+  }
+    isWatered = false;
   }
 };
 
 class Worker {
 public:
-  virtual void performTask();
+  virtual void performTask() {};
 };
 
-void stimulateNewDay(int &animalCount, Animal *animals[], Wheat *wheat, Corn *corn) {
-  cout << "\nA new day has begun... \n";
-  for (int i = 0; i < animalCount; i++) {
-    animals[i]->newDay();
+class AnimalCaretaker : public Worker {
+public:
+  void performTask(Animal* animal) {
+    cout << "Feeding and checking " << animal->getName() << "...\n";
+    animal->feed();
+    animal->checkHealth();
+    animal->produce();
   }
-  wheat->newDay();
-  corn->newDay();
-}
+};
 
-bool checkQuantity(int &quantity, const int &stock) {
-  if (quantity > stock) {
-    cout << "\nError! Cannot process, Stock seems to be low.\n";
-    return true;
+class FieldWorker : public Worker {
+public:
+  void performTask(Crop* crop) {
+    if (!crop->getIsWatered()) {
+      crop->water();
+    }
+    crop->checkStatus();
   }
-  return false;
-}
-
-void buyStock(double &balance, int &stock, int &quantity, double &value) {
-  if (value > balance) {
-    cout << "Not enough balance to buy.\n";
-  } else if (balance > 0) {
-    stock += quantity;
-    balance -= value;
-    cout << "Purchased " << quantity << " units/liters for $" << value << "\n";
-  }
-}
-
-double getValue(int &quantity, double &stock) {
-  return (quantity * stock) / 2;
-}
-
-int getStock() {
-  return rand() % 35 + 20;
-}
-
-double getUnit() {
-  return (rand() % 3 + 1.0) / 2;
-}
-
-void showAvailableStock(int milkStock, int eggStock, int &wheatStock, int &cornStock) {
-  cout << "\nCurrently Available Stocks"
-       << "\n1. Corn:  " << cornStock << " Units"
-       << "\n2. Eggs:  " << eggStock << " Units"
-       << "\n3. Milk:  " << milkStock << " Liters"
-       << "\n4. Wheat: " << wheatStock << " Units" << "\n";
-}
-
-void sellStock(double &balance, int &stock, int &quantity, double &value) {
-  stock -= quantity;
-  balance += value;
-  cout << quantity << " units/liters sold. $" << value << " earned!!\n";
-}
+};
 
 void harvestCrops(Crop *crop, int &stock, string name) {
   if (crop->getDaysToHarvest() == 0) {
@@ -392,18 +395,150 @@ void harvestCrops(Crop *crop, int &stock, string name) {
   }
 }
 
+class WorkerManager {
+  AnimalCaretaker caretaker;
+  FieldWorker fieldWorker;
+
+public:
+  void animalCaretakerTasks(AnimalManager &animalManager, int animalCount, Animal *animals[]) {
+    int choice;
+    cout << "\nAnimal Caretaker Here...\n"
+         << "1. Produce product\n"
+         << "2. Feed animal\n"
+         << "3. Check Animal Health \n"
+         << "\nEnter your choice: ";
+    cin >> choice;
+
+    if (!animalManager.checkAnimalValidity(animalCount)) {
+      animalManager.displayAnimalList(animalCount, animals);
+      int index = animalManager.getValidAnimalIndex(animalCount);
+      if (index != -1) {
+        switch (choice) {
+          case 1:
+            animals[index]->produce();
+            break;
+          case 2:
+            animals[index]->feed();
+            break;
+          case 3:
+            animals[index]->checkHealth();
+            break;
+          default:
+            cout << "Invalid choice.\n";
+            break;
+        }
+      }
+    }
+  }
+
+  void fieldWorkerTasks(Crop *wheat, Crop *corn, int &wheatStock, int &cornStock) {
+    int choice;
+    cout << "\nField Worker Here...\n"
+         << "1. Water Crops\n"
+         << "2. Harvest Crops\n"
+         << "3. Check Crop Status\n"
+         << "\nEnter your choice: ";
+    cin >> choice;
+
+    switch (choice) {
+      case 1:
+        if (!wheat->getIsWatered()) {
+          wheat->water();
+          corn->water();
+        } else {
+          cout << "Crops are already watered\n";
+        }
+        break;
+      case 2:
+        harvestCrops(wheat, wheatStock, "Wheat");
+        harvestCrops(corn, cornStock, "Corn");
+        break;
+      case 3:
+        wheat->checkStatus();
+        corn->checkStatus();
+        break;
+      default:
+        cout << "Invalid choice.\n";
+        break;
+    }
+  }
+};
+
+void stimulateNewDay(int &animalCount, Animal *animals[], Crop* wheat, Crop* corn) {
+  cout << "\nA new day has begun... \n";
+  for (int i = 0; i < animalCount; i++) {
+    animals[i]->newDay();
+  }
+  wheat->newDay();
+  corn->newDay();
+}
+
+
+class Market {
+public:
+  bool checkQuantity(int &quantity, const int &stock) {
+    if (quantity > stock) {
+      cout << "\nError! Cannot process, Stock seems to be low.\n";
+      return true;
+    }
+    return false;
+  }
+  
+  void showAvailableStock(int milkStock, int eggStock, int &wheatStock, int &cornStock) {
+    cout << "\nCurrently Available Stocks"
+    << "\n1. Corn:  " << cornStock << " Units"
+    << "\n2. Eggs:  " << eggStock << " Units"
+    << "\n3. Milk:  " << milkStock << " Liters"
+    << "\n4. Wheat: " << wheatStock << " Units" << "\n";
+  }
+
+  void buyStock(double &balance, int &stock, int &quantity, double &value) {
+    if (value > balance) {
+      cout << "Not enough balance to buy.\n";
+    } else if (balance > 0) {
+      stock += quantity;
+      balance -= value;
+      cout << "Purchased " << quantity << " units/liters for $" << value << "\n";
+    }
+  }
+  
+  void sellStock(double &balance, int &stock, int &quantity, double &value) {
+    stock -= quantity;
+    balance += value;
+    cout << quantity << " units/liters sold. $" << value << " earned!!\n";
+  }
+
+  double getValue(int &quantity, double &stock) {
+    return (quantity * stock) / 2;
+  }
+
+  int getStock() {
+    return rand() % 35 + 20;
+  }
+
+  double getUnit() {
+    return (rand() % 3 + 1.0) / 2;
+  }
+};
+
 int Cow::milkCapacity = 0;
 int Chicken::totalEggs = 0;
 
 int main() {
   srand(time(0));
 
-  AnimalManager animalManager;
-  Wheat wheat;
-  Corn corn;
+  Market market;
 
   const int maxAnimals = 10;
   Animal *animals[maxAnimals];
+  
+  Crop* wheat = new Wheat();
+  Crop* corn = new Corn();
+
+  AnimalManager animalManager;
+  WorkerManager workerManager;
+  
+
   int animalCount = 0;
 
   int stock;
@@ -479,14 +614,14 @@ int main() {
 
           switch (choice) {
             case 1:
-              wheat.grow();
+              wheat->grow();
               break;
             case 2:
-              corn.grow();
+              corn->grow();
               break;
             case 3:
-              harvestCrops(&wheat, wheatStock, "Wheat");
-              harvestCrops(&corn, cornStock, "Corn");
+              harvestCrops(wheat, wheatStock, "Wheat");
+              harvestCrops(corn, cornStock, "Corn");
               break;
             case 4:
               break;
@@ -500,73 +635,19 @@ int main() {
       case 3: {
         do {
           cout << "\n*** Worker Management System *** \n"
-               << "1. Animal Caretaker\n"
-               << "2. Field Worker\n"
-               << "3. Back\n"
-               << "\nEnter your choice: ";
+              << "1. Animal Caretaker\n"
+              << "2. Field Worker\n"
+              << "3. Back\n"
+              << "\nEnter your choice: ";
           cin >> choice;
 
           switch (choice) {
-            case 1: {
-              cout << "\nAnimal Caretaker Here...\n"
-                   << "1. Produce product\n"
-                   << "2. Feed animal\n"
-                   << "3. Check Animal Health \n"
-                   << "\nEnter your choice: ";
-              cin >> choice;
-
-              if (choice == 1) {
-                if (!animalManager.checkAnimalValidity(animalCount)) {
-                  animalManager.displayAnimalList(animalCount, animals);
-                  int index = animalManager.getValidAnimalIndex(animalCount);
-                  if (index != -1) {
-                    animals[index]->produce();
-                  }
-                }
-              } else if (choice == 2) {
-                if (!animalManager.checkAnimalValidity(animalCount)) {
-                  animalManager.displayAnimalList(animalCount, animals);
-                  int index = animalManager.getValidAnimalIndex(animalCount);
-                  if (index != -1) {
-                    animals[index]->feed();
-                  }
-                }
-              } else if (choice == 3) {
-                if (!animalManager.checkAnimalValidity(animalCount)) {
-                  for (int i = 0; i < animalCount; i++) {
-                    animals[i]->checkHealth();
-                  }
-                }
-              } else {
-                cout << "Invalid choice.\n";
-              }
+            case 1:
+              workerManager.animalCaretakerTasks(animalManager, animalCount, animals);
               break;
-            }
-            case 2: {
-              cout << "\nField Worker Here...\n"
-                   << "1. Water Crops\n"
-                   << "2. Harvest Crops\n"
-                   << "3. Check Crop Status\n"
-                   << "\nEnter your choice: ";
-              cin >> choice;
-              if (choice == 1) {
-                if (!wheat.getIsWatered()) {
-                  wheat.water();
-                  corn.water();
-                } else {
-                  cout << "Crops are already watered\n";
-                }
-              } else if (choice == 2) {
-                harvestCrops(&wheat, wheatStock, "Wheat");
-                harvestCrops(&corn, cornStock, "Corn");
-              } else if (choice == 3) {
-                wheat.checkStatus();
-                corn.checkStatus();
-              } else {
-                cout << "Invalid choice.\n";
-              }
+            case 2:
+              workerManager.fieldWorkerTasks(wheat, corn, wheatStock, cornStock);
               break;
-            }
             case 3:
               break;
             default:
@@ -574,13 +655,12 @@ int main() {
               break;
           }
         } while (choice != 3);
-        break;
-      }
+      } break;
       case 4:
-        stimulateNewDay(animalCount, animals, &wheat, &corn);
+        stimulateNewDay(animalCount, animals, wheat, corn);
         break;
       case 5:
-        showAvailableStock(Cow::getMilkCapacity(), Chicken::getTotalEggs(), wheatStock, cornStock);
+        market.showAvailableStock(Cow::getMilkCapacity(), Chicken::getTotalEggs(), wheatStock, cornStock);
         break;
       case 6: {
         int index = 0, quantity = 0;
@@ -598,8 +678,8 @@ int main() {
           break;
         }
 
-        int randomCornStock = getStock(), randomWheatStock = getStock(), randomMilkStock = getStock(), randomEggStock = getStock();
-        double cornRandomUnit = getUnit(), wheatRandomUnit = getUnit(), milkRandomUnit = getUnit(), eggRandomUnit = getUnit();
+        int randomCornStock = market.getStock(), randomWheatStock = market.getStock(), randomMilkStock = market.getStock(), randomEggStock = market.getStock();
+        double cornRandomUnit = market.getUnit(), wheatRandomUnit = market.getUnit(), milkRandomUnit = market.getUnit(), eggRandomUnit = market.getUnit();
 
         if (choice == 1) {
           if (balance <= 0) {
@@ -626,30 +706,30 @@ int main() {
           }
           
           if (index == 1) {
-            if (!checkQuantity(quantity, randomCornStock)) {
-              double value = getValue(quantity, cornRandomUnit);
-              buyStock(balance, cornStock, quantity, value);
+            if (!market.checkQuantity(quantity, randomCornStock)) {
+              double value = market.getValue(quantity, cornRandomUnit);
+              market.buyStock(balance, cornStock, quantity, value);
             }
           } else if (index == 2) {
-            if (!checkQuantity(quantity, randomWheatStock)) {
-              double value = getValue(quantity, wheatRandomUnit);
-              buyStock(balance, wheatStock, quantity, value);
+            if (!market.checkQuantity(quantity, randomWheatStock)) {
+              double value = market.getValue(quantity, wheatRandomUnit);
+              market.buyStock(balance, wheatStock, quantity, value);
             }
           } else if (index == 3) {
-            if (!checkQuantity(quantity, randomMilkStock)) {
-              double value = getValue(quantity, milkRandomUnit);
-              buyStock(balance, stock, quantity, value);
+            if (!market.checkQuantity(quantity, randomMilkStock)) {
+              double value = market.getValue(quantity, milkRandomUnit);
+              market.buyStock(balance, stock, quantity, value);
               Cow::addMilk(quantity);
             }
           } else if (index == 4) {
-            if (!checkQuantity(quantity, randomEggStock)) {
-              double value = getValue(quantity, eggRandomUnit);
-              buyStock(balance, stock, quantity, value);
+            if (!market.checkQuantity(quantity, randomEggStock)) {
+              double value = market.getValue(quantity, eggRandomUnit);
+              market.buyStock(balance, stock, quantity, value);
               Chicken::addEgg(quantity);
             }
           }
         } else if (choice == 2) {
-          showAvailableStock(Cow::getMilkCapacity(), Chicken::getTotalEggs(), wheatStock, cornStock);
+          market.showAvailableStock(Cow::getMilkCapacity(), Chicken::getTotalEggs(), wheatStock, cornStock);
           cout << "\nEnter stock index and quantity to sell or (0) to leave The Market: ";
           cin >> index;
           if (index == 0) {
@@ -663,26 +743,26 @@ int main() {
           }
 
           if (index == 1) {
-            if (!checkQuantity(quantity, cornStock)) {
-              double value = getValue(quantity, cornRandomUnit);
-              sellStock(balance, cornStock, quantity, value);
+            if (!market.checkQuantity(quantity, cornStock)) {
+              double value = market.getValue(quantity, cornRandomUnit);
+              market.sellStock(balance, cornStock, quantity, value);
             }
           } else if (index == 2) {
-            if (!checkQuantity(quantity, Chicken::getTotalEggs())) {
-              double value = getValue(quantity, eggRandomUnit);
-              sellStock(balance, stock, quantity, value);
+            if (!market.checkQuantity(quantity, Chicken::getTotalEggs())) {
+              double value = market.getValue(quantity, eggRandomUnit);
+              market.sellStock(balance, stock, quantity, value);
               Chicken::removeEgg(quantity);
             }
           } else if (index == 3) {
-            if (!checkQuantity(quantity, Cow::getMilkCapacity())) {
-              double value = getValue(quantity, milkRandomUnit);
-              sellStock(balance, stock, quantity, value);
+            if (!market.checkQuantity(quantity, Cow::getMilkCapacity())) {
+              double value = market.getValue(quantity, milkRandomUnit);
+              market.sellStock(balance, stock, quantity, value);
               Cow::removeMilk(quantity);
             }
           } else if (index == 4) {
-            if (!checkQuantity(quantity, wheatStock)) {
-              double value = getValue(quantity, wheatRandomUnit);
-              sellStock(balance, wheatStock, quantity, value);
+            if (!market.checkQuantity(quantity, wheatStock)) {
+              double value = market.getValue(quantity, wheatRandomUnit);
+              market.sellStock(balance, wheatStock, quantity, value);
             }
           }
         }
