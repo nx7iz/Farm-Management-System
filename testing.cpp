@@ -278,8 +278,7 @@ public:
 
 int Worker::workerCount = 0;
 
-class AnimalCaretaker : public Worker
-{
+class AnimalCaretaker : public Worker {
 public:
   void performTask(Animal *animals[], int animalCount, Crop *, int &, Crop *, int &, int &, int &) override
   {
