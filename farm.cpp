@@ -1,8 +1,23 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
+#include <limits>
 
 using namespace std;
+
+int getNumericInput()
+{
+  int input;
+  cin >> input;
+  while (cin.fail())
+  {
+    cin.clear();                                         
+    cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+    cout << "Invalid input. Please enter a number: ";
+    cin >> input;
+  }
+  return input;
+}
 
 class Animal
 {
@@ -318,12 +333,14 @@ class Wheat : public Crop
 public:
   Wheat() : Crop("Wheat") {}
 
-  void grow() override {
+  void grow() override
+  {
     daysToHarvest = 3;
     cout << "Planted wheat seeds.\n";
   }
 
-  int harvestYield() override {
+  int harvestYield() override
+  {
     if (isWatered || daysToHarvest == 0)
       return rand() % 26 + 10;
     else
@@ -333,7 +350,8 @@ public:
     }
   }
 
-  void water() override {
+  void water() override
+  {
     if (daysToHarvest != -1)
     {
       isWatered = true;
@@ -343,7 +361,8 @@ public:
       cout << name << " not planted yet.\n";
   }
 
-  virtual void newDay() override {
+  virtual void newDay() override
+  {
     if (daysToHarvest != 0)
     {
       if (daysToHarvest != -1)
@@ -526,7 +545,7 @@ public:
          << "2. Harvest Crops\n"
          << "3. Check Crop Status\n"
          << "\nEnter your choice: ";
-    cin >> choice;
+    choice = getNumericInput();
 
     switch (choice)
     {
@@ -556,16 +575,16 @@ public:
   }
 };
 
-  void stimulateNewDay(int &animalCount, Animal *animals[], Crop *wheat, Crop *corn)
+void stimulateNewDay(int &animalCount, Animal *animals[], Crop *wheat, Crop *corn)
+{
+  cout << "\nA new day has begun... \n";
+  for (int i = 0; i < animalCount; i++)
   {
-    cout << "\nA new day has begun... \n";
-    for (int i = 0; i < animalCount; i++)
-    {
-      animals[i]->newDay();
-    }
-    wheat->newDay();
-    corn->newDay();
+    animals[i]->newDay();
   }
+  wheat->newDay();
+  corn->newDay();
+}
 
 class Market
 {
@@ -615,15 +634,9 @@ public:
     return (quantity * stock) / 2;
   }
 
-  int getStock()
-  {
-    return rand() % 35 + 20;
-  }
+  int getStock() { return rand() % 35 + 20; }
 
-  double getUnit()
-  {
-    return (rand() % 3 + 1.0) / 2;
-  }
+  double getUnit() { return (rand() % 3 + 1.0) / 2; }
 };
 
 int Cow::milkCapacity = 0;
@@ -635,7 +648,7 @@ int main()
 
   const int maxAnimals = 10;
   Animal *animals[maxAnimals];
-  
+
   Crop *wheat = new Wheat();
   Crop *corn = new Corn();
 
@@ -643,7 +656,7 @@ int main()
   WorkerManager workerManager;
 
   Market market;
-  
+
   int animalCount = 0;
 
   int stock;
@@ -663,7 +676,7 @@ int main()
          << "6. Go To Market \n"
          << "0. Exit \n"
          << "\nEnter your choice: ";
-    cin >> choice;
+    choice = getNumericInput();
 
     switch (choice)
     {
@@ -677,7 +690,7 @@ int main()
              << "3. Remove Animal \n"
              << "4. Back \n"
              << "\nEnter your choice: ";
-        cin >> choice;
+        choice = getNumericInput();
 
         switch (choice)
         {
@@ -725,7 +738,7 @@ int main()
              << "3. Harvest Crops\n"
              << "4. Back\n"
              << "\nEnter your choice: ";
-        cin >> choice;
+        choice = getNumericInput();
 
         switch (choice)
         {
@@ -757,7 +770,7 @@ int main()
              << "2. Field Worker\n"
              << "3. Back\n"
              << "\nEnter your choice: ";
-        cin >> choice;
+        choice = getNumericInput();
 
         switch (choice)
         {
@@ -793,7 +806,7 @@ int main()
            << "\n2. Sell goods"
            << "\n3. Back"
            << "\nEnter your choice: ";
-      cin >> choice;
+      choice = getNumericInput();
 
       if (choice == 3)
       {
@@ -930,8 +943,8 @@ int main()
   } while (choice != 0);
 
   for (int i = 0; i < animalCount; i++)
-  {
     delete animals[i];
-  }
-  return 0;
+
+  delete wheat;
+  delete corn;
 }
