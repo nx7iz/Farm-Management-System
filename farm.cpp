@@ -11,8 +11,8 @@ int getNumericInput()
   cin >> input;
   while (cin.fail())
   {
-    cin.clear();                                         
-    cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+    cin.clear();
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
     cout << "Invalid input. Please enter a number: ";
     cin >> input;
   }
@@ -37,6 +37,7 @@ public:
   virtual void produce() = 0;
 
   string getName() { return name; }
+  virtual int getHealth() const { return health; }
 
   virtual ~Animal() {};
 };
@@ -82,10 +83,15 @@ public:
       else
         cout << name << " was well-fed today. Health remains stable. \n";
     }
-    if (health == 0)
-      cout << name << " died. Cause of death: Starvation.\n";
+
+    if (health <= 0)
+    {
+      cout << name << " has died. Cause of death: Starvation.\n";
+    }
     else if (health < 50)
+    {
       cout << name << " Health is unstable. Please feed. \n";
+    }
 
     if (health < 0)
       health = 0;
@@ -169,9 +175,9 @@ public:
 
     fedToday = false;
 
-    if (health == 0)
+    if (health <= 0)
     {
-      cout << name << " died. Cause of death: Starvation.\n";
+      cout << name << " has died. Cause of death: Starvation.\n";
     }
     else if (health < 50)
     {
@@ -260,6 +266,27 @@ public:
     {
       cout << "Invalid animal index.\n";
       return nullptr;
+    }
+  }
+
+  void removeDeadAnimals(int &animalCount, Animal *animals[])
+  {
+    for (int i = 0; i < animalCount;)
+    {
+      if (animals[i]->getHealth() <= 0)
+      {
+        cout << animals[i]->getName() << " has died and will be removed.\n";
+        delete animals[i];
+        for (int j = i; j < animalCount - 1; j++)
+        {
+          animals[j] = animals[j + 1];
+        }
+        animalCount--;
+      }
+      else
+      {
+        i++;
+      }
     }
   }
 
@@ -575,13 +602,15 @@ public:
   }
 };
 
-void stimulateNewDay(int &animalCount, Animal *animals[], Crop *wheat, Crop *corn)
+void stimulateNewDay(int &animalCount, Animal *animals[], Crop *wheat, Crop *corn, AnimalManager animalManager)
 {
   cout << "\nA new day has begun... \n";
   for (int i = 0; i < animalCount; i++)
   {
     animals[i]->newDay();
   }
+  animalManager.removeDeadAnimals(animalCount, animals);
+
   wheat->newDay();
   corn->newDay();
 }
@@ -790,7 +819,7 @@ int main()
     }
     break;
     case 4:
-      stimulateNewDay(animalCount, animals, wheat, corn);
+      stimulateNewDay(animalCount, animals, wheat, corn, animalManager);
       break;
     case 5:
       market.showAvailableStock(Cow::getMilkCapacity(), Chicken::getTotalEggs(), wheatStock, cornStock);
