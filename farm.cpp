@@ -556,16 +556,16 @@ public:
   }
 };
 
-void stimulateNewDay(int &animalCount, Animal *animals[], Crop *wheat, Crop *corn)
-{
-  cout << "\nA new day has begun... \n";
-  for (int i = 0; i < animalCount; i++)
+  void stimulateNewDay(int &animalCount, Animal *animals[], Crop *wheat, Crop *corn)
   {
-    animals[i]->newDay();
+    cout << "\nA new day has begun... \n";
+    for (int i = 0; i < animalCount; i++)
+    {
+      animals[i]->newDay();
+    }
+    wheat->newDay();
+    corn->newDay();
   }
-  wheat->newDay();
-  corn->newDay();
-}
 
 class Market
 {
