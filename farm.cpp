@@ -301,7 +301,7 @@ public:
 
   int getValidAnimalIndex(int &animalCount)
   {
-    int index;
+    int index;                    
     cout << "Enter the animal index: ";
     cin >> index;
 
